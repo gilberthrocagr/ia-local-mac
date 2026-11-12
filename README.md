@@ -1,7 +1,11 @@
-# IA local para programar (Mac)
+# IA local para programar — macOS
 
 Una IA que escribe y arregla código **en tu Mac, sin internet y sin pagar nada**. Solo para
 código: nada de imágenes, vídeo ni chat. Se usa desde la Terminal con [Aider](https://aider.chat).
+
+> Para Mac con **Apple Silicon** (M1 o posterior) y 64 GB de RAM. ¿Tienes un PC con **Windows**
+> y una GPU **NVIDIA**? La versión hermana está en
+> [ia-local-all-in-one](https://github.com/gilberthrocagr/ia-local-all-in-one).
 
 - **Modelo:** [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) (Alibaba, agosto de 2026,
   licencia Apache 2.0), versión Q8_0 de [bartowski](https://huggingface.co/bartowski/Qwen3.8-27B-GGUF)
