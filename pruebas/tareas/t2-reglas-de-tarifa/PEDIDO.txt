@@ -1,0 +1,1 @@
+Implementa calcular_tarifa en tarifa.py siguiendo exactamente las reglas del docstring. Los tests están en test_tarifa.py; no los cambies.

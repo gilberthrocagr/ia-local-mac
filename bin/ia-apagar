@@ -1,0 +1,40 @@
+#!/bin/bash
+# ia-apagar  Apaga la IA local a la fuerza y suelta la RAM, aunque haya sesiones abiertas.
+# Para cuando algo se quedó trabado. Lo normal es salir de Aider con /exit.
+
+YO="$(readlink -f "${BASH_SOURCE[0]}")"
+RAIZ="$(cd "$(dirname "$YO")/.." && pwd -P)"
+source "$RAIZ/config.sh"
+source "$RAIZ/lib/comun.sh"
+
+ia_preparar_carpetas
+TOMADO=0
+ia_candado_tomar && TOMADO=1
+
+HABIA=0
+for pid in $(ia_motores_vivos); do
+  HABIA=1
+  ia_parar_pid "$pid"
+done
+rm -f "$IA_PID_SERVIDOR" "$IA_PUERTO_SERVIDOR"
+
+# El vigía termina solo al ver el motor apagado; si sigue ahí, fuera.
+VPID="$(cat "$IA_PID_VIGIA" 2>/dev/null)"
+if [ -n "$VPID" ] && ps -p "$VPID" -o command= 2>/dev/null | /usr/bin/grep -qF "lib/vigia.sh"; then
+  kill "$VPID" 2>/dev/null
+fi
+rm -f "$IA_PID_VIGIA"
+rm -f "$IA_SESIONES"/* "$IA_ESTADO"/aider-*.env 2>/dev/null
+
+if [ "$TOMADO" = 1 ]; then ia_candado_soltar; else rm -rf "$IA_CANDADO"; fi
+
+if [ -n "$(ia_motores_vivos)" ]; then
+  echo "No pude apagarla del todo: sigue vivo el pid $(ia_motores_vivos | tr '\n' ' ')"
+  exit 1
+fi
+if [ "$HABIA" = 1 ]; then
+  echo "IA apagada: la RAM quedó libre."
+else
+  echo "La IA ya estaba apagada."
+fi
+echo "Si había una sesión de Aider abierta, ciérrala con /exit."

@@ -1,0 +1,111 @@
+#!/bin/bash
+# ia           Abre Aider con la IA local en la carpeta donde estés. Piensa lo justo.
+# ia-profundo  Lo mismo, pero el modelo piensa a fondo antes de responder (más lento).
+#
+# Si el motor está apagado, lo prende y carga el modelo. Al salir de Aider (/exit, Ctrl+C
+# dos veces o cerrando la ventana), si no queda otra sesión abierta, apaga el motor y la
+# RAM queda libre. Lo que pongas después de ia se le pasa a Aider (ej.: ia archivo.py).
+
+YO="$(readlink -f "${BASH_SOURCE[0]}")"
+RAIZ="$(cd "$(dirname "$YO")/.." && pwd -P)"
+source "$RAIZ/config.sh"
+source "$RAIZ/lib/comun.sh"
+
+case "$(basename "$0")" in
+  ia-profundo) MODO="profundo" ;;
+  *)           MODO="normal" ;;
+esac
+
+ia_preparar_carpetas
+ia_comprobar_instalacion || exit 1
+
+AIDER="$(command -v aider || echo "$HOME/.local/bin/aider")"
+
+# ---------- prender (o reutilizar) el motor ----------
+ia_candado_tomar || exit 1
+ia_sesiones_limpiar
+if ia_servidor_vivo; then
+  ia_aviso "La IA ya estaba prendida: uso la misma (no ocupa más RAM)."
+  ia_vigia_vivo || ia_vigia_lanzar "$(ia_pid_servidor)"
+else
+  ia_servidor_parar        # por si quedó un pid viejo
+  ia_parar_huerfanos       # y motores sueltos de un fallo anterior
+  OCUPA="$(ia_puerto_ocupado_por)"
+  if [ -n "$OCUPA" ]; then
+    ia_aviso "El puerto $IA_PUERTO lo está usando otro programa: $(ps -p "$OCUPA" -o comm= 2>/dev/null) (pid $OCUPA)."
+    ia_aviso "Ciérralo o cambia IA_PUERTO en $RAIZ/config.sh."
+    ia_candado_soltar
+    exit 1
+  fi
+  LIBRE="$(ia_ram_libre_gb)"
+  if [ -n "$LIBRE" ] && [ "$LIBRE" -lt "$IA_RAM_NECESARIA" ]; then
+    ia_aviso "Ojo: hay unos $LIBRE GB libres y la IA necesita unos $IA_RAM_NECESARIA. Cierra programas o irá muy lenta."
+  fi
+  ia_servidor_arrancar
+fi
+ia_sesion_registrar
+ia_candado_soltar
+
+# ---------- al salir: soltar la RAM si ya nadie la usa ----------
+# Al cerrar la ventana llegan dos SIGHUP seguidos y un usuario impaciente puede pulsar
+# Ctrl+C varias veces: mientras terminar() trabaja, esas señales se ignoran.
+terminar() {
+  local quedan
+  trap - EXIT
+  trap '' HUP INT TERM
+  ia_esconder_aider_de_git      # por si Aider acaba de crear el repositorio
+  rm -f "$ENV_AIDER"
+  if ! ia_candado_tomar; then
+    ia_sesion_quitar
+    return
+  fi
+  ia_sesion_quitar
+  quedan="$(ia_sesiones_contar)"
+  if [ "$quedan" -eq 0 ]; then
+    ia_servidor_parar
+    if [ -z "$(ia_motores_vivos)" ]; then
+      rm -f "$IA_PID_VIGIA"
+      ia_aviso "IA apagada: la RAM quedó libre."
+    else
+      ia_aviso "No pude apagar la IA del todo. Ejecuta: ia-apagar"
+    fi
+  else
+    ia_aviso "La IA sigue prendida: queda(n) $quedan sesión(es) abierta(s) en otra ventana."
+  fi
+  ia_candado_soltar
+}
+trap terminar EXIT
+trap 'trap "" HUP INT TERM; exit 129' HUP
+trap 'trap "" HUP INT TERM; exit 130' INT
+trap 'trap "" HUP INT TERM; exit 143' TERM
+
+ia_esperar_listo || exit 1
+ia_esconder_aider_de_git
+
+# La clave y la dirección del motor van en un archivo que Aider lee el último, así un
+# .env del proyecto (con una clave de OpenAI, por ejemplo) no las pisa. Tampoco salen en ps.
+ENV_AIDER="$IA_ESTADO/aider-$$.env"
+( umask 077; printf 'OPENAI_API_KEY=%s\nOPENAI_API_BASE=%s\n' "$(cat "$IA_CLAVE")" "$(ia_url /v1)" > "$ENV_AIDER" )
+
+[ "$MODO" = "profundo" ] && ia_aviso "Modo profundo: piensa a fondo antes de responder; puede tardar bastante."
+
+# Aviso de la Mac cuando termina de responder (útil: a veces tarda minutos)
+AVISOS="--notifications"; [ "${IA_AVISOS:-si}" = "no" ] && AVISOS="--no-notifications"
+
+"$AIDER" \
+  --env-file "$ENV_AIDER" \
+  --model "openai/qwen3.8-$MODO" \
+  --weak-model "openai/qwen3.8-rapido" \
+  --model-settings-file "$RAIZ/aider/ajustes.yml" \
+  --model-metadata-file "$RAIZ/aider/modelo.json" \
+  --edit-format diff \
+  --no-auto-commits --no-dirty-commits \
+  --no-gitignore \
+  --no-analytics \
+  --no-check-update --no-show-release-notes \
+  --no-show-model-warnings \
+  --chat-language Spanish \
+  --timeout 3600 \
+  "$AVISOS" \
+  "$@"
+exit $?

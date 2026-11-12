@@ -1,0 +1,4 @@
+# Versiones que se cambian respecto a las que pide Aider 0.86.2 (uv --overrides).
+# scipy 1.15.3 no carga en macOS 27 (dlopen de _spropack: "zero-fill section type") y sin
+# ella Aider se cae al hacer el mapa del proyecto en cualquier carpeta con git.
+scipy==1.16.3

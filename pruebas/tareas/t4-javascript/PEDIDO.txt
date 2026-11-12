@@ -1,0 +1,1 @@
+Arregla resumenPorEstado en pedidos.js: los tests de pedidos.test.js fallan. Además, los totales tienen que ir redondeados a 2 decimales y los pedidos cancelados no cuentan. No cambies los tests.

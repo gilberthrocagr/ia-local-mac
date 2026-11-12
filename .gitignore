@@ -1,0 +1,13 @@
+# Lo pesado y lo de cada equipo se baja o se crea con instalar.sh
+modelos/
+motor/
+estado/
+logs/
+
+# Archivos que Aider deja en la carpeta donde se abre
+.aider*
+
+# Copias de trabajo de las pruebas
+pruebas/trabajo/
+__pycache__/
+.pytest_cache/

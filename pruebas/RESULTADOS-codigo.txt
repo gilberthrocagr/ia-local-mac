@@ -1,0 +1,14 @@
+PASA t1-error-de-borde (ia): tests 3/7 -> 7/7 en 82 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+FALLA t2-reglas-de-tarifa (ia): tests 0/28 -> 27/28 en 219 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+PASA t3-varios-archivos (ia): tests 0/1 -> 10/10 en 129 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+PASA t4-javascript (ia): tests 1/4 -> 4/4 en 75 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+PASA t5-profundo (ia-profundo): tests 0/7 -> 7/7 en 474 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+4 de 5 tareas resueltas (2026-11-11 22:25)
+
+PASA a la primera t1-error-de-borde (ia): tests 3/7 -> 7/7 en 97 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+PASA a la primera t2-reglas-de-tarifa (ia): tests 0/28 -> 28/28 en 451 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+PASA a la primera t3-varios-archivos (ia): tests 0/1 -> 10/10 en 221 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+PASA a la primera t4-javascript (ia): tests 1/4 -> 4/4 en 85 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+PASA a la primera t5-profundo (ia-profundo): tests 0/7 -> 7/7 en 499 s; código 0; commits 1; .gitignore intacto si; tests sin tocar si; .aider en git status 0
+5 de 5 tareas resueltas, 5 a la primera (2026-11-11 22:54)
+

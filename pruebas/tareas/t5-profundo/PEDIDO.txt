@@ -1,0 +1,1 @@
+Implementa minimo_repartidores y asignar en repartidores.py siguiendo exactamente los docstrings. Los tests están en test_repartidores.py (incluyen 100.000 entregas, así que tiene que ser rápido). No cambies los tests.

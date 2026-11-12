@@ -1,0 +1,1 @@
+Añade cupones de descuento como piden los tests de test_cupones.py. Hay que tocar modelos.py, servicio.py y api.py. Los tests de test_existente.py tienen que seguir pasando. No cambies ningún test.

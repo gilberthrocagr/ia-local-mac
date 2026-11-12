@@ -1,0 +1,38 @@
+#!/bin/bash
+# ia-estado  Dice si la IA local está prendida, cuántas sesiones la usan y cuánta RAM ocupa.
+
+YO="$(readlink -f "${BASH_SOURCE[0]}")"
+RAIZ="$(cd "$(dirname "$YO")/.." && pwd -P)"
+source "$RAIZ/config.sh"
+source "$RAIZ/lib/comun.sh"
+
+ia_preparar_carpetas
+gb() { awk -v k="$1" 'BEGIN {printf "%.1f", k/1048576}'; }
+
+PID="$(ia_pid_servidor)"
+SESIONES="$(ia_sesiones_contar)"
+SUELTOS="$(ia_motores_vivos | /usr/bin/grep -vx "${PID:-x}" | tr '\n' ' ')"
+
+if ia_servidor_vivo; then
+  RSS="$(ps -p "$PID" -o rss= 2>/dev/null | tr -d ' ')"
+  CODIGO=$(ia_curl -s -o /dev/null -w '%{http_code}' -m 2 "$(ia_url /health)")
+  DORMIDO=$(ia_curl -s -m 2 -H "Authorization: Bearer $(cat "$IA_CLAVE" 2>/dev/null)" "$(ia_url /props)" 2>/dev/null \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin).get("is_sleeping", False))' 2>/dev/null)
+  if [ "$DORMIDO" = "True" ]; then
+    echo "IA local: EN REPOSO (prendida, pero soltó el modelo de la RAM por no usarse; lo recarga sola al pedirle algo)"
+  elif [ "$CODIGO" = "200" ]; then
+    echo "IA local: PRENDIDA y lista"
+  else
+    echo "IA local: PRENDIDA, cargando el modelo"
+  fi
+  echo "  Memoria que ocupa: $(gb "${RSS:-0}") GB"
+  echo "  Sesiones de Aider abiertas: $SESIONES"
+  echo "  Motor: pid $PID, puerto $(ia_puerto_activo) (solo este equipo)"
+else
+  echo "IA local: APAGADA (no ocupa RAM)"
+  [ "$SESIONES" -gt 0 ] && echo "  Ojo: hay $SESIONES sesión(es) de ia esperando; la siguiente la prende."
+fi
+if [ -n "$SUELTOS" ]; then
+  echo "  Ojo: hay un motor suelto (pid $SUELTOS). Apágalo con: ia-apagar"
+fi
+echo "  Mac: unos $(ia_ram_libre_gb) GB de RAM libres de 64"

@@ -1,0 +1,43 @@
+# Ajustes de Aider para Qwen3.8-27B servido en local por llama.cpp.
+# Los tres nombres apuntan al MISMO modelo cargado; cambia solo cuánto piensa.
+# Muestreo: el que recomienda la ficha oficial para el modo pensando
+# (temperature 1.0, top_p 0.95, top_k 20, min_p 0).
+
+- name: openai/qwen3.8-normal
+  edit_format: diff
+  use_repo_map: true
+  use_temperature: 1.0
+  weak_model_name: openai/qwen3.8-rapido
+  extra_params:
+    max_tokens: 32768
+    top_p: 0.95
+    extra_body:
+      top_k: 20
+      min_p: 0.0
+      reasoning_effort: medium
+
+- name: openai/qwen3.8-profundo
+  edit_format: diff
+  use_repo_map: true
+  use_temperature: 1.0
+  weak_model_name: openai/qwen3.8-rapido
+  extra_params:
+    max_tokens: 32768
+    top_p: 0.95
+    extra_body:
+      top_k: 20
+      min_p: 0.0
+      reasoning_effort: xhigh   # el nivel más alto que acepta la plantilla (low, medium, xhigh)
+
+# Para las tareas de servicio de Aider (resumir la conversación larga): sin pensar.
+- name: openai/qwen3.8-rapido
+  edit_format: diff
+  use_repo_map: true
+  use_temperature: 0.7
+  extra_params:
+    max_tokens: 4096
+    top_p: 0.8
+    extra_body:
+      top_k: 20
+      min_p: 0.0
+      reasoning_effort: none
